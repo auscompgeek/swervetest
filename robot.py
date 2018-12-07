@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import math
-import numpy as np
 
 import ctre
 import magicbot
 import wpilib
+
+from networktables import NetworkTables
+
 from pyswervedrive.swervechassis import Chassis
 from pyswervedrive.swervemodule import SwerveModule
 from utilities.navx import NavX
 from utilities.functions import rescale_js, constrain_angle
-from robotpy_ext.misc.looptimer import LoopTimer
-from networktables import NetworkTables
 
 
 class Robot(magicbot.MagicRobot):
@@ -25,13 +25,11 @@ class Robot(magicbot.MagicRobot):
     def createObjects(self):
         """Create non-components here."""
 
-        self.module_a = SwerveModule(  # top left module
-            # "a", steer_talon=ctre.TalonSRX(48), drive_talon=ctre.TalonSRX(49),
+        self.module_a = SwerveModule(
             "a", steer_talon=ctre.TalonSRX(42), drive_talon=ctre.TalonSRX(48),
             x_pos=-0.25, y_pos=0.31,
             drive_free_speed=Robot.module_drive_free_speed)
-        self.module_b = SwerveModule(  # top left module
-            # "a", steer_talon=ctre.TalonSRX(48), drive_talon=ctre.TalonSRX(49),
+        self.module_b = SwerveModule(
             "b", steer_talon=ctre.TalonSRX(58), drive_talon=ctre.TalonSRX(2),
             x_pos=0.25, y_pos=-0.31,
             drive_free_speed=Robot.module_drive_free_speed)
@@ -43,14 +41,12 @@ class Robot(magicbot.MagicRobot):
 
         # boilerplate setup for the joystick
         self.joystick = wpilib.Joystick(0)
-        self.gamepad = wpilib.XboxController(1)
 
         self.spin_rate = 1.5
 
     def teleopInit(self):
         '''Called when teleop starts; optional'''
         self.chassis.set_inputs(0, 0, 0)
-        self.loop_timer = LoopTimer(self.logger)
 
     def teleopPeriodic(self):
         """
@@ -70,35 +66,26 @@ class Robot(magicbot.MagicRobot):
         # in order to make their response exponential, and to set a dead zone -
         # which just means if it is under a certain value a 0 will be sent
         # TODO: Tune these constants for whatever robot they are on
-        joystick_vx = -rescale_js(self.joystick.getY(), deadzone=0.1, exponential=1.5, rate=4*throttle)
-        joystick_vy = -rescale_js(self.joystick.getX(), deadzone=0.1, exponential=1.5, rate=4*throttle)
+        joystick_vx = -rescale_js(self.joystick.getY(), deadzone=0.1, exponential=1.5, rate=throttle)
+        joystick_vy = -rescale_js(self.joystick.getX(), deadzone=0.1, exponential=1.5, rate=throttle)
         joystick_vz = -rescale_js(self.joystick.getZ(), deadzone=0.2, exponential=20.0, rate=self.spin_rate)
-        joystick_hat = self.joystick.getPOV()
 
         if joystick_vx or joystick_vy or joystick_vz:
             self.chassis.set_inputs(joystick_vx, joystick_vy, joystick_vz,
                                     field_oriented=not self.joystick.getRawButton(6))
-        elif self.gamepad.getStickButton(self.gamepad.Hand.kLeft):
-            # TODO Tune these constants for the gamepad.
-            gamepad_vx = -rescale_js(self.gamepad.getY(self.gamepad.Hand.kRight), deadzone=0.1, exponential=1.5, rate=0.5)
-            gamepad_vy = -rescale_js(self.gamepad.getX(self.gamepad.Hand.kRight), deadzone=0.1, exponential=1.5, rate=0.5)
-
-            self.chassis.set_inputs(gamepad_vx, gamepad_vy, 0, field_oriented=True)
         else:
             self.chassis.set_inputs(0, 0, 0)
 
-        if joystick_hat != -1:
-            constrained_angle = -constrain_angle(math.radians(joystick_hat))
-            self.chassis.set_heading_sp(constrained_angle)
+        # joystick_hat = self.joystick.getPOV()
+        # if joystick_hat != -1:
+        #     constrained_angle = -constrain_angle(math.radians(joystick_hat))
+        #     self.chassis.set_heading_sp(constrained_angle)
 
     def testPeriodic(self):
-        if self.gamepad.getStartButtonPressed():
-            self.module_a.store_steer_offsets()
-            self.module_b.store_steer_offsets()
+        pass
 
     def robotPeriodic(self):
-        # super().robotPeriodic()
-        self.sd.putNumber("imu_heading", self.imu.getAngle())
+        super().robotPeriodic()
 
 
 if __name__ == '__main__':

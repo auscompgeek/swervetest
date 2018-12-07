@@ -79,9 +79,9 @@ class SwerveModule:
         # changes sign of motor throttle vilues
         self.steer_motor.setInverted(self.reverse_steer_direction)
 
-        self.steer_motor.config_kP(0, 3.0, 10)
+        self.steer_motor.config_kP(0, 20.0, 10)
         self.steer_motor.config_kI(0, 0.0, 10)
-        self.steer_motor.config_kD(0, 5.0, 10)
+        self.steer_motor.config_kD(0, 0.0, 10)
         self.steer_motor.selectProfileSlot(0, 0)
         self.steer_motor.config_kF(0, 0, 10)
         self.read_steer_pos()
@@ -117,9 +117,9 @@ class SwerveModule:
         self.drive_motor.configPeakCurrentLimit(50, timeoutMs=10)
         self.drive_motor.configContinuousCurrentLimit(40, timeoutMs=10)
         self.drive_motor.configPeakCurrentDuration(0, timeoutMs=10)
-        # self.drive_motor.enableCurrentLimit(True)
+        self.drive_motor.enableCurrentLimit(True)
         self.drive_motor.configVoltageCompSaturation(9, timeoutMs=10)
-
+        self.drive_motor.enableVoltageCompensation(True)
 
     def read_steer_pos(self):
         sp = self.steer_motor.getSelectedSensorPosition(0)
@@ -238,7 +238,7 @@ class SwerveModule:
         else:
             #self.drive_motor.set(ctre.ControlMode.Velocity,
             #                     speed * self.drive_velocity_to_native_units)
-            self.drive_motor.set(ctre.ControlMode.PercentOutput, speed / 4)
+            self.drive_motor.set(ctre.ControlMode.PercentOutput, speed)
 
     @property
     def steer_enc_offset(self):

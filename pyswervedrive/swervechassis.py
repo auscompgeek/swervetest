@@ -42,7 +42,7 @@ class Chassis:
         self.heading_pid.setInputRange(-math.pi, math.pi)
         self.heading_pid.setOutputRange(-2, 2)
         self.heading_pid.setContinuous()
-        self.heading_pid.enable()
+        # self.heading_pid.enable()
         self.modules = [self.module_a, self.module_b]
 
         self.odometry_x = 0
