@@ -1,6 +1,6 @@
 import math
 
-from robotpy_ext.common_drivers.navx.ahrs import AHRS
+from navx.ahrs import AHRS
 from wpilib.interfaces import PIDSource
 
 
